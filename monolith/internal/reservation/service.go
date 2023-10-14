@@ -1,6 +1,8 @@
 package reservation
 
-import "context"
+import (
+	"context"
+)
 
 type Service interface {
 	CreateReservation(context.Context, *Reservation) error

@@ -43,3 +43,8 @@ TODO: neden date'i teker teker tuttuk
 
 Aynı istek 2.defa geldiğinde reservation id primary key olarak tuttuğumuz için
 pq: duplicate key value violates unique constraint "reservation_pk" hatası ile double reservation'u önledik.
+
+Pessimistic Lock için (FOR UPDATE için)
+    - https://linuxhint.com/select-update-postgres/   
+    - https://www.postgresql.org/docs/current/explicit-locking.html#LOCKING-ROWS
+

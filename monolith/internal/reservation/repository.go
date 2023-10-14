@@ -59,7 +59,8 @@ func checkInventory(tx *sql.Tx, reservation *Reservation) (RoomTypeInventory, er
 	checkInventoryQuery := `
 		SELECT date, total_inventory, total_reserved
 		FROM room_type_inventory
-		WHERE hotel_id = $1 and room_type_id = $2 AND date between $3 AND $4`
+		WHERE hotel_id = $1 and room_type_id = $2 AND date between $3 AND $4
+		FOR UPDATE`
 
 	var roomTypeInventory RoomTypeInventory
 
