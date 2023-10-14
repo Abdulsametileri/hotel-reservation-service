@@ -1,0 +1,13 @@
+# Create Reservation
+POST localhost:3000/v1/reservations
+Content-Type: application/json
+Accept: application/json
+
+{
+  "startDate": "2023-10-12",
+  "endDate": "2023-10-13",
+  "hotelId": 100,
+  "roomTypeId": 1,
+  "reservationId": "65ac63c6-0f65-42c2-a05c-78a1ac9a384f"
+}
+
