@@ -10,6 +10,7 @@ import (
 
 var (
 	ErrNoEnoughCapacity = errors.New("no enough capacity")
+	ErrEditConflict     = errors.New("edit conflict")
 )
 
 type Repository interface {
@@ -44,7 +45,7 @@ func (repo *defaultRepository) Create(ctx context.Context, reservation *Reservat
 		return fmt.Errorf("error inserting reservation %w", err)
 	}
 
-	if err = updateInventory(tx, reservation); err != nil {
+	if err = updateInventory(tx, reservation, inventory.Version); err != nil {
 		return fmt.Errorf("error updating inventory %w", err)
 	}
 
@@ -57,10 +58,9 @@ func (repo *defaultRepository) Create(ctx context.Context, reservation *Reservat
 
 func checkInventory(tx *sql.Tx, reservation *Reservation) (RoomTypeInventory, error) {
 	checkInventoryQuery := `
-		SELECT date, total_inventory, total_reserved
+		SELECT date, total_inventory, total_reserved, version
 		FROM room_type_inventory
-		WHERE hotel_id = $1 and room_type_id = $2 AND date between $3 AND $4
-		FOR UPDATE`
+		WHERE hotel_id = $1 and room_type_id = $2 AND date between $3 AND $4`
 
 	var roomTypeInventory RoomTypeInventory
 
@@ -76,6 +76,7 @@ func checkInventory(tx *sql.Tx, reservation *Reservation) (RoomTypeInventory, er
 			&roomTypeInventory.Date,
 			&roomTypeInventory.TotalInventory,
 			&roomTypeInventory.TotalReserved,
+			&roomTypeInventory.Version,
 		); err != nil {
 		return RoomTypeInventory{}, err
 	}
@@ -104,21 +105,30 @@ func createReservation(tx *sql.Tx, reservation *Reservation) error {
 	return nil
 }
 
-func updateInventory(tx *sql.Tx, reservation *Reservation) error {
+func updateInventory(tx *sql.Tx, reservation *Reservation, version int) error {
 	updateInventoryQuery := `
 		UPDATE room_type_inventory
-		SET total_reserved=total_reserved+1
-		WHERE hotel_id=$1 AND room_type_id=$2 AND date between $3 AND $4`
+		SET total_reserved = total_reserved + 1, version = version + 1 
+		WHERE hotel_id = $1 AND room_type_id = $2 AND date between $3 AND $4 
+	  	AND version = $5`
 
 	updateInventoryArgs := []interface{}{
 		reservation.HotelID,
 		reservation.RoomTypeID,
 		reservation.StartDate,
 		reservation.EndDate,
+		version,
 	}
 
-	if _, err := tx.Exec(updateInventoryQuery, updateInventoryArgs...); err != nil {
+	result, err := tx.Exec(updateInventoryQuery, updateInventoryArgs...)
+	if err != nil {
 		return err
 	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return ErrEditConflict
+	}
+
 	return nil
 }

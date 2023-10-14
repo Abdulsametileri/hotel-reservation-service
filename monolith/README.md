@@ -34,8 +34,7 @@ alter table room_type_inventory
 INSERT INTO room_type_inventory (hotel_id, room_type_id, date, total_inventory, total_reserved)
 VALUES
     (100, 1, '2023-10-12', 2, 0),
-    (100, 1, '2023-10-13', 2, 0),
-    (100, 2, '2023-10-12', 2, 0);
+    (100, 1, '2023-10-13', 2, 0);
 ```
 
 TODO: neden room değilde room_type_id tutuyoruz?
@@ -48,3 +47,8 @@ Pessimistic Lock için (FOR UPDATE için)
     - https://linuxhint.com/select-update-postgres/   
     - https://www.postgresql.org/docs/current/explicit-locking.html#LOCKING-ROWS
 
+### Altering Room Type Inventory Table For Optimistic Locking
+```sql
+alter table room_type_inventory
+add version integer;
+```

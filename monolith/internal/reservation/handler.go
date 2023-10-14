@@ -43,6 +43,8 @@ func (h *Handler) CreateReservation(ctx *fiber.Ctx) error {
 		switch {
 		case errors.Is(err, ErrNoEnoughCapacity):
 			return ctx.Status(http.StatusBadRequest).SendString("Not enough capacity")
+		case errors.Is(err, ErrEditConflict):
+			return ctx.Status(http.StatusConflict).SendString("Edit conflict, please try again")
 		default:
 			fmt.Println("[ERROR]", err.Error())
 			return ctx.Status(http.StatusInternalServerError).SendString("Please try again later")

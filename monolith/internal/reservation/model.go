@@ -14,4 +14,5 @@ type RoomTypeInventory struct {
 	Date           string `json:"date"`
 	TotalInventory int    `json:"totalInventory"`
 	TotalReserved  int    `json:"totalReserved"`
+	Version        int    `json:"-"`
 }
