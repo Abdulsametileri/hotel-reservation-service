@@ -52,3 +52,38 @@ Pessimistic Lock için (FOR UPDATE için)
 alter table room_type_inventory
 add version integer;
 ```
+
+### Adding reservation db
+```sql
+create database reservation;
+```
+
+```sql
+create table reservation
+(
+    reservation_id uuid
+        constraint reservation_pk
+            primary key,
+    hotel_id       integer,
+    room_type_id   integer,
+    start_date     date,
+    end_date       date,
+    status         text
+);
+```
+
+### Adding inventory db
+```sql
+create database inventory;
+```
+
+```sql
+create table room_type_inventory
+(
+    hotel_id        integer,
+    room_type_id    integer,
+    date            date,
+    total_inventory integer,
+    total_reserved  integer
+);
+```

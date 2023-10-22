@@ -1,8 +1,9 @@
-package database
+package main
 
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	_ "github.com/lib/pq"
 	"time"
 )
@@ -11,8 +12,8 @@ type DB struct {
 	db *sql.DB
 }
 
-func NewDB() (*DB, error) {
-	connectionString := "host=localhost port=5432 user=postgres password=postgres dbname=hotelreservation sslmode=disable"
+func NewDB(dbname string) (*DB, error) {
+	connectionString := fmt.Sprintf("host=localhost port=5432 user=postgres password=postgres dbname=%s sslmode=disable", dbname)
 
 	connectionPool, err := sql.Open("postgres", connectionString)
 	if err != nil {

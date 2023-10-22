@@ -1,4 +1,4 @@
-package reservation
+package main
 
 type Reservation struct {
 	StartDate     string `json:"startDate"`

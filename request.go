@@ -1,4 +1,4 @@
-package reservation
+package main
 
 type ReqBody struct {
 	StartDate     string `json:"startDate"`
