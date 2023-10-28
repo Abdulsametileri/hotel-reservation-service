@@ -37,20 +37,11 @@ VALUES
     (100, 1, '2023-10-13', 2, 0);
 ```
 
-TODO: neden room değilde room_type_id tutuyoruz?
-TODO: neden date'i teker teker tuttuk
-
-Aynı istek 2.defa geldiğinde reservation id primary key olarak tuttuğumuz için
-pq: duplicate key value violates unique constraint "reservation_pk" hatası ile double reservation'u önledik.
-
-Pessimistic Lock için (FOR UPDATE için)
-    - https://linuxhint.com/select-update-postgres/   
-    - https://www.postgresql.org/docs/current/explicit-locking.html#LOCKING-ROWS
-
 ### Altering Room Type Inventory Table For Optimistic Locking
+
 ```sql
 alter table room_type_inventory
-add version integer;
+add version integer default 0;
 ```
 
 ### Adding reservation db
