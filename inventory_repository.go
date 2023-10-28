@@ -8,6 +8,7 @@ import (
 
 var (
 	ErrNoEnoughCapacity = errors.New("no enough capacity")
+	ErrEditConflict     = errors.New("edit conflict")
 )
 
 type InventoryRepository interface {
@@ -31,10 +32,9 @@ func (repo *defaultInventoryRepository) UpdatePrepared(ctx context.Context, r *R
 	}
 
 	selectQuery := `
-		SELECT date, total_inventory, total_reserved
+		SELECT date, total_inventory, total_reserved, version
 		FROM room_type_inventory
 		WHERE hotel_id = $1 AND room_type_id = $2 AND date BETWEEN $3 AND $4
-		FOR UPDATE;
 	`
 
 	args := []interface{}{
@@ -46,22 +46,30 @@ func (repo *defaultInventoryRepository) UpdatePrepared(ctx context.Context, r *R
 
 	var inventory RoomTypeInventory
 	if err = tx.QueryRowContext(ctx, selectQuery, args...).
-		Scan(&inventory.Date, &inventory.TotalInventory, &inventory.TotalReserved); err != nil {
+		Scan(&inventory.Date, &inventory.TotalInventory, &inventory.TotalReserved, &inventory.Version); err != nil {
 		return RoomTypeInventory{}, err
 	}
 
+	args = append(args, inventory.Version)
 	updateQuery := `
 		UPDATE room_type_inventory
-		SET total_reserved = total_reserved + 1
+		SET total_reserved = total_reserved + 1, version = version + 1
 		WHERE hotel_id = $1 AND room_type_id = $2 AND date BETWEEN $3 AND $4
+		AND version = $5
 	`
 
 	if _, err = tx.ExecContext(ctx, updateQuery, args...); err != nil {
 		return RoomTypeInventory{}, err
 	}
 
-	if _, err = tx.ExecContext(ctx, fmt.Sprintf("PREPARE TRANSACTION '%s';", txID)); err != nil {
+	result, err := tx.ExecContext(ctx, fmt.Sprintf("PREPARE TRANSACTION '%s';", txID))
+	if err != nil {
 		return RoomTypeInventory{}, err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return RoomTypeInventory{}, ErrEditConflict
 	}
 
 	if inventory.TotalReserved > inventory.TotalInventory {
