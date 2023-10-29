@@ -1,3 +1,6 @@
+
+## You can check [the blog post](https://abdulsamet-ileri.medium.com/lets-implement-a-basic-hotel-reservation-system-with-2pc-using-pessimistic-and-optimistic-locks-in-581256d142e8) for details of this project.
+
 ### Creating Reservation Table
 ```sql
 create table reservation
